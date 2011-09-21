@@ -38,22 +38,22 @@ sub parse {
     
     ## A wiki page is defined a 'sequence of' the following options
     my $sequence =
-	$self->sequence_of( sub {
-	    $self->
-		any_of(
-		    
-		    ## Templates
-		    sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
-		    
-		    ## Currently anything else is just 'wikitext'
-		    sub { $self->parse_wikitext },
-		);
+        $self->sequence_of( sub {
+            $self->
+                any_of(
+                    
+                    ## Templates
+                    sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
+                    
+                    ## Currently anything else is just 'wikitext'
+                    sub { $self->parse_wikitext },
+                );
         });
     
     return $self->
-	make_page(
-	    elements => $sequence,
-	);
+        make_page(
+            elements => $sequence,
+        );
 }
 
 sub parse_wikitext {
@@ -62,7 +62,7 @@ sub parse_wikitext {
     
     ## Everything from where we are to the next template or EOS
     my $text =
-	$self->substring_before( '{{' );
+        $self->substring_before( '{{' );
     
     ## This would keep returning '' until the end of time, so...
     length $text or $self->fail;
@@ -86,10 +86,10 @@ sub parse_template {
         list_of( '|', sub{ $self->parse_field } );
     
     return $self->
-	make_template(
-	    title  => $title,
-	    fields => $fields,
-	);
+        make_template(
+            title  => $title,
+            fields => $fields,
+        );
 }
 
 sub parse_title {
@@ -110,10 +110,10 @@ sub parse_field {
     my $val;
     
     $self->
-	maybe( sub{ 
-	    $key = $self->parse_title;
-	    $self->expect( '=' );
-	});
+        maybe( sub{ 
+            $key = $self->parse_title;
+            $self->expect( '=' );
+        });
     
     $val = $self->parse_value;
 
@@ -130,6 +130,7 @@ sub parse_value {
     my $value = $self->
         sequence_of( sub {
             $self->any_of(
+                
                 ## A nested template?
                 sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
                 
