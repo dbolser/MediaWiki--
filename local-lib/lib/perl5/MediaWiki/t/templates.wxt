@@ -1,0 +1,63 @@
+A collection of random templates and their surrounding context
+
+= T1 =
+You may find more information on the [[:File:Sinitta-20060511.jpg|file description page]]. You are welcome to add comments to its entry at [[Wikipedia:Possibly unfree files/2009 July 14#File:Sinitta-20060511.jpg|the discussion]] if you are interested in it not being deleted. Thank you. <!-- Template:Idw-pui -->
+
+== Please Add Edit Summary to your edits ==
+
+{{Uw-exteditsummary|Tonkie67}}
+
+==Orphaned non-free image (File:Madonna - La isla bonita - 12 inch single.jpg)==
+<span style="font-size:32px; line-height:1em">'''[[Image:Ambox warning blue.svg|35px|left|&#x26A0;]]'''</span> Thanks for uploading '''[[:File:Madonna - La isla bonita - 12 inch single.jpg]]'''. The image description page currently specifies that the image is non-free and may only be used on Wikipedia under a [[WP:FU|claim of fair use]].
+
+
+= T2 (grabbed the whole page!) =
+
+{{About|the human gene|Isolated Growth Hormone Deficiency|Growth hormone deficiency}}
+{{PBB|geneid=3495}}
+
+'''Ig delta chain C region''' is a [[protein]] that in humans is encoded by the ''IGHD'' [[gene]].<ref name="pmid3922054">{{cite journal | author = White MB, Shen AL, Word CJ, Tucker PW, Blattner FR | title = Human immunoglobulin D: genomic sequence of the delta heavy chain | journal = Science | volume = 228 | issue = 4700 | pages = 733–7 | year = 1985 | month = May | pmid = 3922054 | pmc =  | doi =10.1126/science.3922054  }}</ref><ref name="entrez">{{cite web | title = Entrez Gene: IGHD immunoglobulin heavy constant delta| url = http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene&Cmd=ShowDetailView&TermToSearch=3495| accessdate = }}</ref>
+
+<!-- The PBB_Summary template is automatically maintained by Protein Box Bot.  See Template:PBB_Controls to Stop updates. -->
+{{PBB_Summary
+| section_title = 
+| summary_text = 
+}}
+
+==References==
+{{reflist}}
+==Further reading==
+{{refbegin | 2}}
+{{PBB_Further_reading 
+| citations = 
+*{{cite journal  | author=Shin SU, Wei CF, Amin AR, ''et al.'' |title=Structural and functional properties of mouse-human chimeric IgD. |journal=Hum. Antibodies Hybridomas |volume=3 |issue= 2 |pages= 65–74 |year= 1992 |pmid= 1633267 |doi=  }}
+*{{cite journal  | author=Roes J, Rajewsky K |title=Cell autonomous expression of IgD is not essential for the maturation of conventional B cells. |journal=Int. Immunol. |volume=3 |issue= 12 |pages= 1367–71 |year= 1992 |pmid= 1838007 |doi=10.1093/intimm/3.12.1367  }}
+*{{cite journal  | author=Shinoda T, Takahashi N, Takayasu T, ''et al.'' |title=Complete amino acid sequence of the Fc region of a human delta chain. |journal=Proc. Natl. Acad. Sci. U.S.A. |volume=78 |issue= 2 |pages= 785–9 |year= 1981 |pmid= 6785754 |doi=10.1073/pnas.78.2.785  | pmc=319887  }}
+*{{cite journal  | author=Lin LC, Putnam FW |title=Primary structure of the Fc region of human immunoglobulin D: implications for evolutionary origin and biological function. |journal=Proc. Natl. Acad. Sci. U.S.A. |volume=78 |issue= 1 |pages= 504–8 |year= 1981 |pmid= 6787589 |doi=10.1073/pnas.78.1.504  | pmc=319082  }}
+*{{cite journal  | author=Putnam FW, Takahashi N, Tetaert D, ''et al.'' |title=Amino acid sequence of the first constant region domain and the hinge region of the delta heavy chain of human IgD. |journal=Proc. Natl. Acad. Sci. U.S.A. |volume=78 |issue= 10 |pages= 6168–72 |year= 1982 |pmid= 6947220 |doi=10.1073/pnas.78.10.6168  | pmc=348999  }}
+*{{cite journal  | author=Takayasu T, Takahashi N, Shinoda T |title=Amino acid sequence and location of the three glycopeptides in the Fc region of human immunoglobulin D. |journal=Biochem. Biophys. Res. Commun. |volume=97 |issue= 2 |pages= 635–41 |year= 1981 |pmid= 7008791 |doi=10.1016/0006-291X(80)90311-3  }}
+*{{cite journal  | author=Takayasu T, Suzuki S, Kametani F, ''et al.'' |title=Amino acid sequence of galactosamine-containing glycopeptides in the hinge region of a human immunoglobulin D. |journal=Biochem. Biophys. Res. Commun. |volume=105 |issue= 3 |pages= 1066–71 |year= 1982 |pmid= 7092891 |doi=10.1016/0006-291X(82)91078-6  }}
+*{{cite journal  | author=Roes J, Rajewsky K |title=Immunoglobulin D (IgD)-deficient mice reveal an auxiliary receptor function for IgD in antigen-mediated recruitment of B cells. |journal=J. Exp. Med. |volume=177 |issue= 1 |pages= 45–55 |year= 1993 |pmid= 8418208 |doi=10.1084/jem.177.1.45  | pmc=2190865  }}
+*{{cite journal  | author=Scott IC, Halila R, Jenkins JM, ''et al.'' |title=Molecular cloning, expression and chromosomal localization of a human gene encoding a 33 kDa putative metallopeptidase (PRSM1). |journal=Gene |volume=174 |issue= 1 |pages= 135–43 |year= 1996 |pmid= 8863740 |doi=10.1016/0378-1119(96)00510-0  }}
+*{{cite journal  | author=Zupo S, Cutrona G, Mangiola M, Ferrarini M |title=Role of surface IgM and IgD on survival of the cells from B-cell chronic lymphocytic leukemia. |journal=Blood |volume=99 |issue= 6 |pages= 2277–8 |year= 2002 |pmid= 11902141 |doi=10.1182/blood-2001-11-0126  }}
+*{{cite journal  | author=Gala FA, Morrison SL |title=The role of constant region carbohydrate in the assembly and secretion of human IgD and IgA1. |journal=J. Biol. Chem. |volume=277 |issue= 32 |pages= 29005–11 |year= 2002 |pmid= 12023968 |doi= 10.1074/jbc.M203258200 }}
+*{{cite journal  | author=Strausberg RL, Feingold EA, Grouse LH, ''et al.'' |title=Generation and initial analysis of more than 15,000 full-length human and mouse cDNA sequences. |journal=Proc. Natl. Acad. Sci. U.S.A. |volume=99 |issue= 26 |pages= 16899–903 |year= 2003 |pmid= 12477932 |doi= 10.1073/pnas.242603899  | pmc=139241 }}
+*{{cite journal  | author=Schamel WW, Kuppig S, Becker B, ''et al.'' |title=A high-molecular-weight complex of membrane proteins BAP29/BAP31 is involved in the retention of membrane-bound IgD in the endoplasmic reticulum. |journal=Proc. Natl. Acad. Sci. U.S.A. |volume=100 |issue= 17 |pages= 9861–6 |year= 2003 |pmid= 12886015 |doi= 10.1073/pnas.1633363100  | pmc=187866 }}
+*{{cite journal  | author=Liu T, Qian WJ, Gritsenko MA, ''et al.'' |title=Human plasma N-glycoproteome analysis by immunoaffinity subtraction, hydrazide chemistry, and mass spectrometry. |journal=J. Proteome Res. |volume=4 |issue= 6 |pages= 2070–80 |year= 2006 |pmid= 16335952 |doi= 10.1021/pr0502065  | pmc=1850943 }}
+*{{cite journal  | author=Lee CE, Gaëta B, Malming HR, ''et al.'' |title=Reconsidering the human immunoglobulin heavy-chain locus: 1. An evaluation of the expressed human IGHD gene repertoire. |journal=Immunogenetics |volume=57 |issue= 12 |pages= 917–25 |year= 2006 |pmid= 16402215 |doi= 10.1007/s00251-005-0062-5 }}
+*{{cite journal  | author=Lee CE, Jackson KJ, Sewell WA, Collins AM |title=Use of IGHJ and IGHD gene mutations in analysis of immunoglobulin sequences for the prognosis of chronic lymphocytic leukemia. |journal=Leuk. Res. |volume=31 |issue= 9 |pages= 1247–52 |year= 2007 |pmid= 17169423 |doi= 10.1016/j.leukres.2006.10.013 }}
+*{{cite journal  | author=Samuelsson M, Hallström T, Forsgren A, Riesbeck K |title=Characterization of the IgD binding site of encapsulated Haemophilus influenzae serotype b. |journal=J. Immunol. |volume=178 |issue= 10 |pages= 6316–9 |year= 2007 |pmid= 17475860 |doi=  }}
+}}
+{{refend}}
+
+<!-- The PBB_Controls template provides controls for Protein Box Bot, please see Template:PBB_Controls for details. -->
+{{PBB_Controls
+| update_page = yes 
+| require_manual_inspection = no 
+| update_protein_box = yes
+| update_summary = yes
+| update_citations = yes
+}}
+
+
+{{protein-stub}}
