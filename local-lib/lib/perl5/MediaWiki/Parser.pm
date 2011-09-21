@@ -13,7 +13,7 @@ use base qw( Parser::MGC );
 ## URL)" - http://www.mediawiki.org/wiki/Manual:Title.php#Article_name
 
 use constant
-    pattern_ident => qr{[[:alpha:]\/\-\,\.\'\(\)\:]+\w*};
+    pattern_ident => qr{[a-zAZ0-9\-,.'():_/]+\w*};
 
 our $debug = 0;
 
@@ -43,10 +43,10 @@ sub parse {
 		any_of(
 		    
 		    ## Templates
-		    sub { $self->scope_of( '{{', \&template, '}}' ) },
+		    sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
 		    
 		    ## Currently anything else is just 'wikitext'
-		    sub { $self->wikitext },
+		    sub { $self->parse_wikitext },
 		);
         });
     
@@ -56,9 +56,9 @@ sub parse {
 	);
 }
 
-sub wikitext {
+sub parse_wikitext {
     my $self = shift;
-    $self->debug('wikitex');
+    $self->debug('parse_wikitext');
     
     ## Everything from where we are to the next template or EOS
     my $text =
@@ -70,12 +70,12 @@ sub wikitext {
     return $text;
 }
 
-sub template {
+sub parse_template {
     my $self = shift;
-    $self->debug('templat');
+    $self->debug('parse_template');
     
     # The title of the template
-    my $title = $self->title;
+    my $title = $self->parse_title;
     
     ## The fields of the template, the optional
     ## '[key =] value' parts, '|' separated
@@ -83,7 +83,7 @@ sub template {
     $self->maybe( sub { $self->expect( '|' ) } );
     
     my $fields = $self->
-        list_of( '|', sub{ $self->fields } );
+        list_of( '|', sub{ $self->parse_field } );
     
     return $self->
 	make_template(
@@ -92,9 +92,9 @@ sub template {
 	);
 }
 
-sub title {
+sub parse_title {
     my $self = shift;
-    $self->debug('title');
+    $self->debug('parse_title');
     
     my $title = $self->
         sequence_of( sub { $self->token_ident } );
@@ -102,29 +102,32 @@ sub title {
     return join( ' ', @$title );
 }
 
-sub fields {
+sub parse_field {
     my $self = shift;
-    $self->debug('fields');
+    $self->debug('parse_field');
     
     $self->
         any_of(
-            sub { $self->key_value },
-            sub { $self->value }
+            sub { $self->parse_key_value },
+            sub { $self->parse_value }
         );
+    
+    ## Could use this...
+    # sub parse_field { maybe( $key = parse_key; expect '=' ); parse_value }
 }
 
-sub key_value {
+sub parse_key_value {
     my $self = shift;
-    $self->debug('key_val');
+    $self->debug('parse_key_val');
     
     # A key should be just like a 'title'
-    my $key = $self->title;
+    my $key = $self->parse_title;
     
     # If we fail here, we will fall back to 'value'
     $self->expect( '=' );
     
     ## If we got here, we just need to suck up the 'value'
-    my $val = $self->value;
+    my $val = $self->parse_value;
     
     return {
         'key'   => $key,
@@ -132,18 +135,18 @@ sub key_value {
     };
 }
 
-sub value {
+sub parse_value {
     my $self = shift;
-    $self->debug('value');
+    $self->debug('parse_value');
     
     my $value = $self->
         sequence_of( sub {
             $self->any_of(
                 ## A nested template?
-                sub { $self->scope_of( '{{', \&template, '}}' ) },
+                sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
                 
                 ## Anything else
-                sub { $self->toke },
+                sub { $self->parse_toke },
                 
                 )
         });
@@ -151,9 +154,9 @@ sub value {
     return { 'value' => $value }
 }
 
-sub toke {
+sub parse_toke {
     my $self = shift;
-    $self->debug('toke');
+    $self->debug('parse_toke');
     
     my $toke = $self->
         substring_before( qr/}}|{{|\|/ );
