@@ -106,29 +106,17 @@ sub parse_field {
     my $self = shift;
     $self->debug('parse_field');
     
+    my $key;
+    my $val;
+    
     $self->
-        any_of(
-            sub { $self->parse_key_value },
-            sub { $self->parse_value }
-        );
+	maybe( sub{ 
+	    $key = $self->parse_title;
+	    $self->expect( '=' );
+	});
     
-    ## Could use this...
-    # sub parse_field { maybe( $key = parse_key; expect '=' ); parse_value }
-}
+    $val = $self->parse_value;
 
-sub parse_key_value {
-    my $self = shift;
-    $self->debug('parse_key_val');
-    
-    # A key should be just like a 'title'
-    my $key = $self->parse_title;
-    
-    # If we fail here, we will fall back to 'value'
-    $self->expect( '=' );
-    
-    ## If we got here, we just need to suck up the 'value'
-    my $val = $self->parse_value;
-    
     return {
         'key'   => $key,
         'value' => $val->{value}
