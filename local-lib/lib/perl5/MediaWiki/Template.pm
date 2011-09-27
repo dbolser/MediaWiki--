@@ -5,6 +5,8 @@ use strict;
 
 use Carp;
 
+use Data::Dumper;
+
 =head1 NAME
 
 MediaWiki::Template - A MediaWiki template object
@@ -104,6 +106,36 @@ sub fields
        unless length @{$self->{fields}};
    return $self->{fields};
 }
+
+
+=head2 $fields = $template->field( $key )
+
+Return the value of the field with the name given by $key, or undef if
+no field with that name is defined.
+
+TODO: Handle anonymous fields (using a numeric index) in the same way
+      MW does. I guess the first anonymous field is always {{{1}}},
+      then the next anonymous field is {{{2}}}? Or are all fields
+      numbered from {{{1}}}, anonymous or not?
+
+=cut
+
+sub field
+{
+   my $self = shift;
+   my $key  = shift;
+   
+   ## Note, fields are stored in an array to preserve their order. If
+   ## I were brave, I'd build an index hash that would be updated by
+   ## methods adding or removing fields. Until then...
+   
+   for my $field ( @{$self->{fields}} ){
+       return $field->{value}
+	 if $field->{key} eq $key;
+   }
+   return undef;
+}
+
 
 
 1;
