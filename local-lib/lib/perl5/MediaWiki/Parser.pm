@@ -13,7 +13,7 @@ use base qw( Parser::MGC );
 ## URL)" - http://www.mediawiki.org/wiki/Manual:Title.php#Article_name
 
 use constant
-    pattern_ident => qr{[a-zAZ0-9\-,.'():_/]+\w*};
+    pattern_ident => qr{[a-zA-Z0-9\-,.'():_/]+\w*};
 
 our $debug = 0;
 
@@ -34,7 +34,7 @@ templates, i.e. templates who are passed templates.
 
 sub parse {
     my $self = shift;
-    $self->debug('parse');
+    $self->debug_parser('parse');
     
     ## A wiki page is defined a 'sequence of' the following options
     my $sequence =
@@ -58,7 +58,7 @@ sub parse {
 
 sub parse_wikitext {
     my $self = shift;
-    $self->debug('parse_wikitext');
+    $self->debug_parser('parse_wikitext');
     
     ## Everything from where we are to the next template or EOS
     my $text =
@@ -72,7 +72,7 @@ sub parse_wikitext {
 
 sub parse_template {
     my $self = shift;
-    $self->debug('parse_template');
+    $self->debug_parser('parse_template');
     
     # The title of the template
     my $title = $self->parse_title;
@@ -94,7 +94,7 @@ sub parse_template {
 
 sub parse_title {
     my $self = shift;
-    $self->debug('parse_title');
+    $self->debug_parser('parse_title');
     
     my $title = $self->
         sequence_of( sub { $self->token_ident } );
@@ -104,7 +104,7 @@ sub parse_title {
 
 sub parse_field {
     my $self = shift;
-    $self->debug('parse_field');
+    $self->debug_parser('parse_field');
     
     my $key;
     my $val;
@@ -125,7 +125,7 @@ sub parse_field {
 
 sub parse_value {
     my $self = shift;
-    $self->debug('parse_value');
+    $self->debug_parser('parse_value');
     
     my $value = $self->
         sequence_of( sub {
@@ -145,7 +145,7 @@ sub parse_value {
 
 sub parse_toke {
     my $self = shift;
-    $self->debug('parse_toke');
+    $self->debug_parser('parse_toke');
     
     my $toke = $self->
         substring_before( qr/}}|{{|\|/ );
@@ -156,9 +156,9 @@ sub parse_toke {
     return $toke;
 }
 
-sub debug {
+sub debug_parser {
     my $self = shift;
-    my $subr = shift || 'unk';
+    my $subr = shift || 'unknown';
     
     my ( $lineno, $col, $text ) = $self->where;
     
@@ -197,5 +197,9 @@ sub make_template
    return MediaWiki::Template->new( @_ );
 }
 
+
+
+## Other page elements can be parsed and objectified similarly, for
+## example, sections, lists, etc.
 
 1;
