@@ -26,20 +26,21 @@ my $p = MediaWiki::Parser->new;
 isa_ok( $p, 'MediaWiki::Parser' );
 
 
+
 ## Warm up by parsing some simple cases, and varous topological
 ## variants (i.e. cases that look different, but are the same.
 
 my @t;
 
-push @t, <<"EOX";
+push @t, <<"EOP";
 Some {{s}} wiki {{k|l|m=n|{{o|p}}|q={{r|s}}|{{t|u=v}}|w={{x|y=z}}}} text.
-EOX
+EOP
 
-push @t, <<"EOX";
+push @t, <<"EOP";
 Some {{ s }} wiki {{ k | l | m = n | {{ o | p }} | q = {{ r | s }} | {{ t | u = v }} | w = {{ x | y = z }} }} text.
-EOX
+EOP
 
-push @t, <<"EOX";
+push @t, <<"EOP";
 Some {{
  s 
 }} wiki {{   k 
@@ -63,7 +64,7 @@ n
 
 }}
 }} text.
-EOX
+EOP
 
 my $last_r;
 
@@ -100,7 +101,143 @@ for my $t (@t){
     isa_ok( $r->[3]->{fields}, 'ARRAY' );
     ok(   @{$r->[3]->{fields}} == 6 );
     
-    ok(!exists $r->[3]->{fields}->[0]->{key} );
+    ok( exists $r->[3]->{fields}->[0]->{key} );
+    ok(        $r->[3]->{fields}->[0]->{key} eq '', 'key is blank');
+    ok( exists $r->[3]->{fields}->[0]->{value} );
+    isa_ok(    $r->[3]->{fields}->[0]->{value}, 'ARRAY' );
+    ok(      @{$r->[3]->{fields}->[0]->{value}} == 1 );
+    ok(        $r->[3]->{fields}->[0]->{value}->[0] =~ /^\s*l\s*$/ );
+    
+    ok( exists $r->[3]->{fields}->[1]->{key} );
+    ok(        $r->[3]->{fields}->[1]->{key} eq 'm' );
+    ok( exists $r->[3]->{fields}->[1]->{value} );
+    isa_ok(    $r->[3]->{fields}->[1]->{value}, 'ARRAY' );
+    ok(      @{$r->[3]->{fields}->[1]->{value}} == 1 );
+    ok(        $r->[3]->{fields}->[1]->{value}->[0] =~ /^\s*n\s*$/ );
+
+    ok( exists $r->[3]->{fields}->[2]->{key} );
+    ok(        $r->[3]->{fields}->[2]->{key} eq '' );
+    ok( exists $r->[3]->{fields}->[2]->{value} );
+    isa_ok(    $r->[3]->{fields}->[2]->{value}, 'ARRAY' );
+    ok(      @{$r->[3]->{fields}->[2]->{value}} == 1 );
+
+    print Dumper @{$r->[3]->{fields}->[2]->{value}};
+    
+    my $x =    $r->[3]->{fields}->[2]->{value}->[0];
+    
+    isa_ok( $x, 'HASH' );
+    
+    ok(     $x->{title} eq 'o' );
+    isa_ok( $x->{fields}, 'ARRAY' );
+    ok(   @{$x->{fields}} == 1 );
+    
+    ok( exists $x->{fields}->[0]->{key} );
+    ok(        $x->{fields}->[0]->{key} eq '' );
+    ok( exists $x->{fields}->[0]->{value} );
+    isa_ok(    $x->{fields}->[0]->{value}, 'ARRAY' );
+    ok(      @{$x->{fields}->[0]->{value}} == 1 );
+    ok(        $x->{fields}->[0]->{value}->[0] =~ /^\s*p\s*$/ );
+    
+    ## Enough already!
+    ok( exists $r->[3]->{fields}->[5]->{key} );
+    ok(        $r->[3]->{fields}->[5]->{key} eq 'w' );
+    ok( exists $r->[3]->{fields}->[5]->{value} );
+    isa_ok(    $r->[3]->{fields}->[5]->{value}, 'ARRAY' );
+    ok(      @{$r->[3]->{fields}->[5]->{value}} == 1 );
+
+    my $y =    $r->[3]->{fields}->[5]->{value}->[0];
+    
+    isa_ok( $y, 'HASH' );
+    
+    ok(     $y->{title} eq 'x' );
+    isa_ok( $y->{fields}, 'ARRAY' );
+    ok(   @{$y->{fields}} == 1 );
+    
+    ok( exists $y->{fields}->[0]->{key} );
+    ok( exists $y->{fields}->[0]->{value} );
+    ok(        $y->{fields}->[0]->{key} eq 'y' );
+    isa_ok(    $y->{fields}->[0]->{value}, 'ARRAY' );
+    ok(      @{$y->{fields}->[0]->{value}} == 1 );
+    ok(        $y->{fields}->[0]->{value}->[0] =~ /^\s*z\s*$/ );
+
+    $last_r = $r;
+}
+
+
+
+## Try some more complex examples (using the object interfacd now,
+## insead of the 'elements' hack above).
+
+## THIS IS AN INVALID TEMPLATE! (titles may not span multiple lines)
+my $t = "{{ here is  a 
+ template | and here is a  value | this key = x | but
+this key = y ||||| and they ain't the same
+| job = 1
+| job = 2
+| job = 3
+}}";
+
+ok( my $r = $p->from_string( $t ), 'parsed ok' );
+
+print Dumper $r
+  if $debugging > 0;
+
+isa_ok( $r, 'MediaWiki::Page' );
+
+## The result should have 1 part, a 'MW:Template'
+ok( @{$r->elements} == 1, 'got 1 part' );
+
+my $e1 = ${$r->elements}[0];
+
+isa_ok( $e1, 'MediaWiki::Template' );
+
+ok( $e1->title eq 'here is a template' );
+
+
+
+
+
+## Seems to fail!
+$t = "{{Cell line
+|id=1146
+|name=EHEB
+|laboratory code=DSMZ
+|catalog code=ACC 67
+|origin=human
+|tissue type=peripheral blood
+|tumor type=leukemia, chronic, B cell
+|export flag=Y
+}}";
+
+ok( $r = $p->from_string( $t ), 'parsed ok' );
+
+print Dumper $r
+  if $debugging > 0;
+
+isa_ok( $r, 'MediaWiki::Page' );
+
+## The result should have 1 part, a 'MW:Template'
+ok( @{$r->elements} == 1, 'got 1 part' );
+
+$e1 = ${$r->elements}[0];
+
+isa_ok( $e1, 'MediaWiki::Template' );
+
+ok( $e1->title eq 'Cell line' );
+
+
+
+
+__END__
+    isa_ok( $r->[1]->{fields}, 'ARRAY' );
+    ok(   @{$r->[1]->{fields}} == 0 );
+
+    ok(     $r->[3]->{title} eq 'k' );
+    isa_ok( $r->[3]->{fields}, 'ARRAY' );
+    ok(   @{$r->[3]->{fields}} == 6 );
+    
+    ok( exists $r->[3]->{fields}->[0]->{key} );
+    ok(        $r->[3]->{fields}->[0]->{key} eq '' );
     ok( exists $r->[3]->{fields}->[0]->{value} );
     isa_ok(    $r->[3]->{fields}->[0]->{value}, 'ARRAY' );
     ok(      @{$r->[3]->{fields}->[0]->{value}} == 1 );
@@ -136,6 +273,13 @@ for my $t (@t){
 
     $last_r = $r;
 }
+
+
+
+
+
+
+
 
 
 

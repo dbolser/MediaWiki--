@@ -106,20 +106,17 @@ sub parse_field {
     my $self = shift;
     $self->debug_parser('parse_field');
     
-    my $key;
-    my $val;
+    my $key = $self->
+	maybe( sub {
+	    ( $self->parse_title,
+	      $self->expect( '=' ) )[0];
+	       });
     
-    $self->
-        maybe( sub{ 
-            $key = $self->parse_title;
-            $self->expect( '=' );
-        });
+    my $val = $self->parse_value;
     
-    $val = $self->parse_value;
-
     return {
-        'key'   => $key,
-        'value' => $val->{value}
+	key   => $key || '',
+	value => $val
     };
 }
 
@@ -127,7 +124,7 @@ sub parse_value {
     my $self = shift;
     $self->debug_parser('parse_value');
     
-    my $value = $self->
+    $self->
         sequence_of( sub {
             $self->any_of(
                 
@@ -139,8 +136,6 @@ sub parse_value {
                 
                 )
         });
-    
-    return { 'value' => $value }
 }
 
 sub parse_toke {
