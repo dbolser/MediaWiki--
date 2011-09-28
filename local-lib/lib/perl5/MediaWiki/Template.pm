@@ -103,12 +103,12 @@ sub fields
 {
    my $self = shift;
    return undef
-       unless length @{$self->{fields}};
+       unless scalar @{$self->{fields}};
    return $self->{fields};
 }
 
 
-=head2 $fields = $template->field( $key )
+=head2 $value = $template->field( $key )
 
 Return the value of the field with the name given by $key, or undef if
 no field with that name is defined.
@@ -120,168 +120,67 @@ TODO: Handle anonymous fields (using a numeric index) in the same way
 
 =cut
 
-sub field
-{
-   my $self = shift;
-   my $key  = shift;
-   
-   ## Note, fields are stored in an array to preserve their order. If
-   ## I were brave, I'd build an index hash that would be updated by
-   ## methods adding or removing fields. Until then...
-   
-   for my $field ( @{$self->{fields}} ){
-       return $field->{value}
-	 if $field->{key} eq $key;
-   }
-   return undef;
-}
-
-
-
-1;
-
-__END__
-
-, $name ) = @_;
-  #print "\n", Dumper $template;
-  
-  my $name;   # The template name (mandatory)
-  my @fields; # The template fields (optional)
-  
-  ## I should croak?
-  die unless
-    ref($template) eq 'ARRAY';
-  
-  die scalar @$template, "\n" unless
-    @$template <= 2;
-  
-  $name = $template->[0];
-  
-  if(@$template>1){
-    die unless
-      ref($template->[1]) eq 'ARRAY';
+sub field {
+    my $self = shift;
+    my $key  = shift;
     
-    @fields = @{$template->[1]};
-  }
-  
-  ## Check fields
-  for my $field (@fields){
-    _check_fields($field)
-      or die;
-  }
-  
-  my $self =
-    { 'name'   => $name,
-      'fields' => @fields,
-    };
-  
-  bless ($self, $class);
-  
-  return $self;
-}
-
-
-
-sub _check_fields {
-  my $field = shift;
-  #print "\n", Dumper $field;
-  
-  ## I should croak?
-  die $field unless
-    ref($field) eq 'ARRAY';
-  
-  die scalar @$field, "\n" unless
-    @$field <= 2;
-  
-  $field->[-1] = MediaWiki::Template->new( $field->[-1] )
-    if ref($field->[-1]);
-  
-  return 1;
-}
-
-
-
-
-
-sub to_text {
-  my $self = shift;
-
-  my $name   = $self->name;
-  my $fields = $self->fields;
-
-  my @fields =
-    map "$_=". $fields->{$_},
-      keys %$fields;
-
-  my $text = '{{'.
-    join("\n|", $name, @fields).
-      (@fields ? "\n}}" : "}}");
-
-  return $text;
-}
-
-sub name {
-  my $self = shift;
-  $self->{name} = shift if @_;
-  return $self->{name};
-}
-
-sub fields {
-  my $self = shift;
-  $self->{fields} = shift if @_;
-  return $self->{fields};
-}
-
-
-
-sub new_from_text {
-  my ($class, $text) = @_;
-
-  my @templates;
-
-  while($text =~ /{{.*?}}/gs){
-    my $beg = $-[0];
-    my $end = $+[0];
-    my $len = $end - $beg;
-
-    #print "got one from $beg to $end ($len)\n";
-
-    push @templates, \substr($text, $beg, $len);
-  }
-
-  return \
-@templates;
-}
-
-
-sub _template_from_text {
-  my $text = shift;
-
-  $text =~ /{{(.*?)}}/s
-    or die "foff\n";
+    ## Note, fields are stored in an array to preserve their order. If
+    ## I were brave, I'd build an index hash that would be updated by
+    ## methods adding or removing fields (where?). Until then...
     
-  my @data = split(/\|/, $1);
-    
-    
+    for my $field ( @{$self->{fields}} ){
+	return $field->{value}
+	  if $field->{key} eq $key;
+    }
+    return undef;
 }
 
 
 
+sub to_string {
+    my $self = shift;
+    
+    my $title  = $self->title;
+    my $fields = $self->fields;
+    
+    $title .= '|' if $fields;
+    
+    return '{{'. $title.
+      join( '|', map { field_to_string( $_ ) } @$fields ).
+	'}}';
+}
+
+sub field_to_string {
+    my $field = shift;
+    
+    my $key = $field->{key} ? $field->{key}. '=' : '';
+    
+    my @values = @{$field->{value}};
+    
+    ## Recurse...
+    for(my $i=0; $i<@values; $i++){
+	if(ref($values[$i]) eq 'MediaWiki::Template'){
+	    $values[$i] = $values[$i]->to_string;
+	}
+    }
+    
+    return $key. join( '', @values );
+}
 
 
-
-
-
-__END__
 
 =head1 AUTHOR
 
-Jools 'BuZz' Wills, C<< <buzz [at] exotica.org.uk> >>
+Dan Bolser, C<< <dan.bolser [at] gfail.com> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-mediawiki-api at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=MediaWiki-API>.  I will be notified, and then you'll automatically be notified of progress on your bug as I make changes.
+Please report any bugs or feature requests to C<bug-mediawiki-api at
+rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=MediaWiki-API>.  I
+will be notified, and then you'll automatically be notified of
+progress on your bug as I make changes.
+
 
 =head1 SUPPORT
 
@@ -313,45 +212,23 @@ L<http://search.cpan.org/dist/MediaWiki-API>
 =back
 
 
+
 =head1 ACKNOWLEDGEMENTS
 
 =over
 
-=item * Carl Beckhorn (cbeckhorn [at] fastmail.fm) for ideas and support
+=item * Jools 'BuZz' Wills, C<< <buzz [at] exotica.org.uk> >> for MW:API
 
-=item * Stuart 'Kyzer' Caie (kyzer [at] 4u.net) for UnExoticA perl code and support
+=item * Leo Nerd for P:MGC and moral support
 
-=item * Edward Chernenko (edwardspec [at] gmail.com) for his earlier MediaWiki module
-
-=item * Dan Collins (EN.WP.ST47 [at] gmail.com) for bug reports and patches
-
-=item * Jonas 'Spectral' Nyren (spectral [at] ludd.luth.se) for hints and tips!
-
-=item * Jason 'XtC' Skelly (xtc [at] amigaguide.org) for moral support
-
-=item * Nikolay Shaplov (n [at] shaplov.ru) for utf-8 patches and testing
-
-=item * Jeremy Muhlich (jmuhlich [at] bitflood.org) for utf-8 patches and testing for api upload support patch
+=item * Eveyone in irc://irc.freenode.net/#perl
 
 =back
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2008 - 2011 Jools Wills, all rights reserved.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+CopyLeft
 
 =cut
 
-1; # End of MediaWiki::API
+1;

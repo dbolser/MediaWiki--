@@ -83,15 +83,53 @@ is_deeply( $fs[1]->{value}, $fm, 'same field (value)' );
 
 
 
-
-
 ## Match!
-print Dumper
-    $r->template_match({title  => 'k',
-			fields => [ { key   => 'l', 
-				      value => [ 'x' ],
-				    } ]
-		       });
+
+## All these cases should match
+
+my $m1 = { title  => 'k' };
+
+my $m2 = { fields => [ { value => [ 'l' ] } ] };
+
+my $m3 = { title  => 'k',
+	   fields => [ { value => [ 'l' ] } ] };
+
+my $m4 = { fields => [ { key   => 'm'     } ] };
+
+my $m5 = { title  => 'k',
+	   fields => [ { key   => 'm'     } ] };
+
+my $m6 = { fields => [ { key   => 'm',
+			 value => [ 'n' ] } ] };
+
+my $m7 = { title  => 'k',
+	   fields => [ { key   => 'm',
+			 value => [ 'n' ] } ] };
+
+my $m8 = { title  => 'k',
+	   fields => [ { value => [ 'l' ] },
+		       { key   => 'm',
+			 value => [ 'n' ] } ] };
+
+is_deeply( $r->template_match( $m1 ), [ $t2 ], 'match on title' );
+is_deeply( $r->template_match( $m2 ), [ $t2 ], 'match on value' );
+is_deeply( $r->template_match( $m3 ), [ $t2 ], 'match on title and value' );
+is_deeply( $r->template_match( $m4 ), [ $t2 ], 'match on key' );
+is_deeply( $r->template_match( $m5 ), [ $t2 ], 'match on title and key' );
+is_deeply( $r->template_match( $m6 ), [ $t2 ], 'match on key and value' );
+is_deeply( $r->template_match( $m7 ), [ $t2 ], 'match on title key and value' );
+is_deeply( $r->template_match( $m8 ), [ $t2 ], 'match on two fields' );
+
+
+
+## String and back?
+
+ok( my $t2 = $r->to_string, 'to string ok' );
+
+ok( my $r2 = $p->from_string( $t2 ), 'parsed ok' );
+
+is_deeply( $r, $r2, 'round trip OK' );
+
 
 
 __END__

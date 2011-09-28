@@ -52,7 +52,7 @@ structure if you need.
 =cut
 
 sub elements{
-    my $self  = shift;
+    my $self = shift;
     return $self->{elements};
 }
 
@@ -92,6 +92,61 @@ sub template{
 
 
 
+=head1 OTHERS...
+
+=cut
+
+=head2 undef = $page->add( $element, $index )
+
+Adds the given page element the page at the given index (or at the
+end).
+
+=cut
+
+sub add {
+    my $self = shift;
+    my $element = shift;
+    my $index = shift || @{$self->{elements}};
+    
+    splice( @{ $self->{elements} }, $index, 0, $element,
+	    splice( @{ $self->{elements} }, $index ) );
+    return undef;
+}
+
+=cut
+
+=head2 $string = $page->to_string
+
+Makes a string from a Page object 
+
+=cut
+
+sub to_string {
+    my $self = shift;
+    my $elements = $self->elements;
+    my $string;
+    
+    for (@$elements){
+	if(0){}
+	elsif( ref eq 'MediaWiki::Template' ){
+	    $string .= $_->to_string;
+	}
+	elsif( ref eq '' ){
+	    $string .= $_;
+	}
+    }
+    return $string;
+}
+
+
+
+
+
+
+=head1 HORRIBLE
+
+=cut
+
 =head2 $template = $page->template_match( \%query )
 
 Returns the templates matching the given title and fields (keys and
@@ -107,7 +162,7 @@ The 'query' should resemble a single parsed template, i.e.
 or
  { fields => [ key => 'x' ] }
 
-or (NOT IMPLEMENTED)
+or
  { fields => [ value => [ 'x' ] ] }
 
 
@@ -123,37 +178,85 @@ sub template_match{
     my $args = shift;
     my @matches;
     
-    foreach my $template (@{$self->templates}){
-	if( defined $args->{title} ){
-	    next unless $template->title eq $args->{title};
+  T:foreach my $template (@{$self->templates}){
+      
+      ## First, try to match the title
+      
+      if( defined $args->{title} ){
+	  next T unless
+	      $template->title eq $args->{title};
+      }
+      
+      unless ( defined $args->{fields} ){
+	  ## With no fields to consider, we have sucessfully matched
+	  ## this template on its title...
+	  push @matches, $template;
+	  next T;
+      }
+      
+      ## Next, try to match the fields
+      
+    F:foreach my $arg_field (@{$args->{fields}}){
+	
+	## First, try to match the key...
+	## We call 'next T' as soon as we fail
+	
+	if( defined $arg_field->{key} ){
+	    next T unless
+		## Look up this key in the template
+		defined $template->field( $arg_field->{key} );
 	}
-	if( defined $args->{fields} ){
-	    foreach my $field (@{$args->{fields}}){
-		if( defined $field->{key} ){
-		    print Dumper $field->{key}; exit;
-		    #print Dumper $val_a; exit;
-			
-		    next unless
-		      defined $template->field( $field->{key} );
-		    if( defined $field->{value} ){
-			my $val_t = $template->field( $field->{key} );
-			my $val_a = $field->{value};
-			
-			print Dumper $val_t;
-			print Dumper $val_a; exit;
-			
-			next unless scalar(@$val_t) == scalar(@$val_a);
-			
-			for(my $i=0; $i<@$val_t; $i++){
-			    next unless $val_t->[$i] eq $val_a->[$i];
-			}
-		    }
+	
+	## Next, we try to match the value...
+	
+	## Note, we either use the value for the corresponding key,
+	## (and call 'next T' as soon as we fail), or *all* values in
+	## the template, if no key is given.
+	
+	if( defined $arg_field->{value} ){
+	    my $arg_val = $arg_field->{value};
+	    
+	    if( defined $arg_field->{key} ){
+		my $tem_val = $template->field( $arg_field->{key} );
+		
+		next T unless
+		    scalar(@$arg_val) == scalar(@$tem_val);
+		
+		for(my $i=0; $i<@$arg_val; $i++){
+		    next T unless
+			    $tem_val->[$i] eq $arg_val->[$i];
 		}
 	    }
+	    else{
+		my $tem_fields = $template->fields;
+		
+		for my $tem_field (@$tem_fields){
+		    my $tem_val = $tem_field->{value};
+		    
+		    next unless scalar(@$arg_val) == scalar(@$tem_val);
+		    
+		    for(my $i=0; $i<@$arg_val; $i++){
+			next unless
+			    $tem_val->[$i] eq $arg_val->[$i];
+		    }
+		    
+		    ## If we got here, this is a match for this arg,
+		    ## we can stop searching template fields and try
+		    ## the next arg field
+		    next F;
+		}
+		## If we got here, there was no match yet
+		next T;
+	    }
 	}
-	push @matches, $template;
-    }
-    return @matches;
+	## If we got here, the key matched and there was no value, or
+	## the key and the value matched... now we just need to do
+	## this F times...
+    }#F
+      push @matches, $template;
+      next T;
+  }#T
+    return @matches ? \@matches : undef ;
 }
 
 1;
