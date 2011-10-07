@@ -95,15 +95,13 @@ sub title
 
 =head2 $fields = $template->fields
 
-Return the fields, or undef if no fields are defined.
+Return the fields of the template
 
 =cut
 
 sub fields
 {
    my $self = shift;
-   return undef
-       unless scalar @{$self->{fields}};
    return $self->{fields};
 }
 
@@ -123,14 +121,19 @@ TODO: Handle anonymous fields (using a numeric index) in the same way
 sub field {
     my $self = shift;
     my $key  = shift;
+    my $val  = shift;
     
     ## Note, fields are stored in an array to preserve their order. If
     ## I were brave, I'd build an index hash that would be updated by
     ## methods adding or removing fields (where?). Until then...
     
     for my $field ( @{$self->{fields}} ){
-	return $field->{value}
-	  if $field->{key} eq $key;
+	if ($field->{key} eq $key){
+	    if(defined $val){
+		$field->{value} = $val;
+	    }
+	    return $field->{value}
+	}
     }
     return undef;
 }
@@ -140,14 +143,19 @@ sub field {
 sub to_string {
     my $self = shift;
     
+    return ''
+      if exists $self->{truncated};
+    
     my $title  = $self->title;
     my $fields = $self->fields;
     
-    $title .= '|' if $fields;
-    
+    @$fields > 1 ?
+      $title .= "\n":
+      $title .=  '|';
+
     return '{{'. $title.
       join( '|', map { field_to_string( $_ ) } @$fields ).
-	'}}';
+	"}}";
 }
 
 sub field_to_string {
@@ -166,6 +174,15 @@ sub field_to_string {
     
     return $key. join( '', @values );
 }
+
+sub truncate {
+    my $self = shift;
+    %$self = (truncated => 1);
+}
+
+
+
+
 
 
 
