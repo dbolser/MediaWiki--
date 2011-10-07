@@ -6,20 +6,15 @@ use Data::Dumper;
 
 use MediaWiki::Parser;
 
-
-
 my $t;
 
-$t .= "{{Template:b_la/r/p}}";
+$t .= " {{ T:b_la/r/p 0-89 m,y. (t)    her'e }}\n\n";
 
-#$t .= " txt
-#
-#moar  {{
-# blarp 
-#  }} web de beb 
-#";
+$t .= "{{Hello|anon|yp}}
 
-#$t .= "{{Hello|anon|yp}}";
+the end
+
+";
 
 # $t .= "{{Hello wor|my key now = * ting [http://ubers]
 # |yp=xy|||
@@ -38,17 +33,21 @@ $t .= "{{Template:b_la/r/p}}";
 # }}
 # ";
 
-$t .= "{{t |   |   |   |   |   |g  }}";
-$t .= "{{t |b  |c  |d  |e  |f  |g  }}";
-$t .= "{{t |b=1|c=2|d=3|e=4|f=5|g=6}}";
+#$t .= "{{t |   |   |   |   |   |g  }}";
+#$t .= "{{t |b  |c  |d  |e  |f  |g  }}";
+#$t .= "{{t |b=1|c=2|d=3|e=4|f=5|g=6}}";
 
 ## Nice demo
 $t .=
-    "{{s}}{{t|p|q=r|{{s|t}}|u={{v|w}}|{{x|y=z}}|a={{b|c=d}}}}";
+    '{{s}}{{t|p|q=r|{{s|t}}|u={{v|w}}|{{x|y=z}}|a={{b|c=d}}}}';
+
+## Nice demo
+$t .=
+    ' {{s}} {{ t | p | q = r | {{ s | t }} | u = {{ v | w }} | {{ x | y = z }} | a = {{ b | c = d }} }} ';
 
 ## Value mixes stings and templates
-$t .=
-    "{{ t | p = One {{sny}} day {{P|Rose}} and {{P|x=Jim}} }}";
+#$t .=
+#    "{{ t | p = One {{sny}} day {{P|Rose}} and {{P|x=Jim}} }}";
 
 #print $t;
 
@@ -59,6 +58,8 @@ my $page =
     $parser->from_string( $t );
 
 print Dumper $page;
+
+exit;
 
 print $page, "\n";
 
