@@ -5,21 +5,17 @@ use warnings;
 
 use base qw( Parser::MGC );
 
-## Extend the notion of an identifier to cover the values allowed by
-## MediaWiki, specifically "Other characters may be ASCII letters,
-## digits, hyphen, comma, period, apostrophe, parentheses and
-## colon. No other ASCII characters are allowed, and will be deleted
-## if found (they will probably cause a browser to misinterpret the
-## URL)" - http://www.mediawiki.org/wiki/Manual:Title.php#Article_name
-
-use constant
-    pattern_ident => qr{[a-zA-Z0-9\-,.'():_/]+\w*};
-
 our $debug = 0;
+
+
 
 =head1 NAME
 
 C<MediaWiki::Parser> - A MediaWiki page (mostly template) parser
+
+=head1 SYNOPSIS
+
+I'm really not good with POD... Improviements welcome!
 
 =head1 DESCRIPTION
 
@@ -32,21 +28,67 @@ templates, i.e. templates who are passed templates.
 
 =cut
 
+
+
+=head1 CONSTRUCTOR
+
+=head2 $parser = MediaWiki::Parser->new( )
+
+This method is inherited from L<Parser::MGC>.
+
+=cut
+
+
+
+=head1 PATTERNS
+
+=over 4
+
+=item * ws
+
+I want to reset this, but it screws with finding template identifiers
+(the name of '{{x y}}' is identical to '{{ x  y }}' in MW), and I
+can't work out how to make all whitespace 'work' as expected in all
+contexts.
+
+= item * ident
+
+Extend the notion of an identifier to cover the values allowed by
+MediaWiki, specifically "Other characters may be ASCII letters,
+digits, hyphen, comma, period, apostrophe, parentheses and colon. No
+other ASCII characters are allowed, and will be deleted if found (they
+will probably cause a browser to misinterpret the URL)" -
+L<http://www.mediawiki.org/wiki/Manual:Title.php#Article_name>
+
+=cut
+
+#use constant
+#    pattern_ws => qr{};
+
+use constant
+    pattern_ident => qr{[[:alnum:]/_\-,.'():]+};
+
+
+
+=head1 METHODS
+
+=cut
+
 sub parse {
     my $self = shift;
-    $self->debug_parser('parse');
+    $self->debug_parser('start parse');
     
     ## A wiki page is defined a 'sequence of' the following options
     my $sequence =
         $self->sequence_of( sub {
             $self->
                 any_of(
-                    
+		    
+		    ## Currently anything else is just 'wikitext'
+                    sub { $self->parse_wikitext },
+		    
                     ## Templates
                     sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
-                    
-                    ## Currently anything else is just 'wikitext'
-                    sub { $self->parse_wikitext },
                 );
         });
     
@@ -157,7 +199,7 @@ sub debug_parser {
     
     my ( $lineno, $col, $text ) = $self->where;
     
-    print join("\t", $subr, $lineno, $col, $text), "\n"
+    print join("\t", $subr, $lineno, $col, "'". $text. "'"), "\n"
         if $debug > 0;
 }
 
