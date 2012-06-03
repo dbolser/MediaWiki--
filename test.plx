@@ -4,6 +4,7 @@ use strict;
 
 use Data::Dumper;
 
+use lib qw( local-lib/lib/perl5 );
 use MediaWiki::Parser;
 
 my $t;
@@ -52,73 +53,21 @@ $t .=
 #print $t;
 
 
+
 my $parser = MediaWiki::Parser->new;
 
 my $page =
     $parser->from_string( $t );
 
-print Dumper $page;
+#print Dumper $page;
 
-exit;
+#exit;
 
 print $page, "\n";
 
-print scalar $page->templates, "\n";
+print scalar( $page->templates ), "\n\n";
 
 for (@{$page->templates}){
     print $_, "\n";
     print $_->title, "\n";
 }
-
-
-
-
-
-
-__END__
-
-
-
-#my $tx = MediaWiki::Template->
-#  new_from_text( $t );
-
-
-my @tx;
-
-while($t =~ /{{.*?}}/gs){
-  my $beg = $-[0];
-  my $end = $+[0];
-  my $len = $end - $beg;
-  
-  #print "got one from $beg to $end ($len)\n";
-  
-  push @tx, \substr($t, $beg, $len);
-}
-
-
-print "'", ${$tx[1]}, "'", "\n";
-
-${$tx[1]} = 'nooo';
-
-print "'", ${$tx[1]}, "'", "\n";
-
-#print $t;
-
-exit;
-
-
-__END__
-
-my $k = ${$tx->[2]};
-
-my $j = \substr($k, 10,20);
-
-$$j= 'jesus is lord';
-
-print "'", $k, "'", "\n";
-
-$tx->[2] = $k;
-
-print $t;
-
-
