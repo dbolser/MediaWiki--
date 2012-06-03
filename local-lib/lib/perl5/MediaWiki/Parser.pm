@@ -26,6 +26,9 @@ representation of the templates, fields and values within the page.
 The main reason for using Parser::MGC is so we can handle recursive
 templates, i.e. templates who are passed templates.
 
+One advantage is that it should allow a modular, generic parser to be
+built, until POM comes along.
+
 =cut
 
 
@@ -49,12 +52,15 @@ This method is inherited from L<Parser::MGC>.
 I want to reset this, but it screws with finding template identifiers
 (the name of '{{x y}}' is identical to '{{ x  y }}' in MW), and I
 can't work out how to make all whitespace 'work' as expected in all
-contexts.
+contexts...
+
+Actually I just need to work on the template 'matching' code so that
+'x y' matches ' x y ' when matching template names, etc.
 
 = item * ident
 
 Extend the notion of an identifier to cover the values allowed by
-MediaWiki, specifically "Other characters may be ASCII letters,
+MediaWiki, specifically, "Other characters may be ASCII letters,
 digits, hyphen, comma, period, apostrophe, parentheses and colon. No
 other ASCII characters are allowed, and will be deleted if found (they
 will probably cause a browser to misinterpret the URL)" -
@@ -62,8 +68,8 @@ L<http://www.mediawiki.org/wiki/Manual:Title.php#Article_name>
 
 =cut
 
-#use constant
-#    pattern_ws => qr{};
+use constant
+    pattern_ws => qr{};
 
 use constant
     pattern_ident => qr{[[:alnum:]/_\-,.'():]+};
@@ -72,26 +78,33 @@ use constant
 
 =head1 METHODS
 
+See L<Parser::MGC>.
+
 =cut
 
 sub parse {
     my $self = shift;
     $self->debug_parser('start parse');
     
-    ## A wiki page is defined a 'sequence of' the following options
+    ## A wiki page is defined a 'sequence of' the following 'options'
+    ## (element types)
     my $sequence =
         $self->sequence_of( sub {
             $self->
                 any_of(
-		    
-		    ## Currently anything else is just 'wikitext'
-                    sub { $self->parse_wikitext },
+                    ## Note, the order of elements is important here!
 		    
                     ## Templates
                     sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
+                    
+                    ## Other element types...
+		    
+		    ## Currently anything else is just 'wikitext'
+                    sub { $self->parse_wikitext },
                 );
         });
-    
+
+    ## Return a 'page' composed of these elements
     return $self->
         make_page(
             elements => $sequence,
@@ -138,10 +151,16 @@ sub parse_title {
     my $self = shift;
     $self->debug_parser('parse_title');
     
-    my $title = $self->
-        sequence_of( sub { $self->token_ident } );
+    ## Give up on trying to be fancy with the title
+    $self->parse_toke;
     
-    return join( ' ', @$title );
+    ## Be 'MediaWiki-like' in title matching... This works well, but
+    ## we must preserve whitespace (to prevent false diffs, so I give
+    ## up on this method.
+    
+    # my $title = $self->
+    #     sequence_of( sub { $self->token_ident } );
+    # return join( ' ', @$title );
 }
 
 sub parse_field {

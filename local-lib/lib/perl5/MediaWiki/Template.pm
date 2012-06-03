@@ -143,18 +143,19 @@ sub field {
 sub to_string {
     my $self = shift;
     
+    ## nothing to return
     return ''
       if exists $self->{truncated};
     
     my $title  = $self->title;
     my $fields = $self->fields;
     
-    @$fields > 1 ?
-      $title .= "\n":
-      $title .=  '|';
+#    @$fields > 1 ?
+#      $title .= "\n":
+#      $title .=  '|';
 
-    return '{{'. $title.
-      join( '|', map { field_to_string( $_ ) } @$fields ).
+    return '{{'. 
+      join( '|', $title, map { field_to_string( $_ ) } @$fields ).
 	"}}";
 }
 
