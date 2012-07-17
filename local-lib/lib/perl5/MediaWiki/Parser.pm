@@ -21,13 +21,13 @@ I'm really not good with POD... Improviements welcome!
 
 This is a L<Parser::MGC> based MediaWiki page (mostly template) parser
 to pull appart a MediaWiki formatted wiki text and build a Perl object
-representation of the templates, fields and values within the page.
+representation of the templates (fields and values) and other
+'objects' within the page.
 
 The main reason for using Parser::MGC is so we can handle recursive
-templates, i.e. templates who are passed templates.
-
-One advantage is that it should allow a modular, generic parser to be
-built, until POM comes along.
+templates, i.e. templates who are passed templates. One advantage is
+that it should allow a modular, generic parser to be built, until POM
+or Lua comes along.
 
 =cut
 
@@ -55,7 +55,16 @@ can't work out how to make all whitespace 'work' as expected in all
 contexts...
 
 Actually I just need to work on the template 'matching' code so that
-'x y' matches ' x y ' when matching template names, etc.
+'x y' matches ' x y ' when matching template names, etc. The advantage
+of resetting this is that we can now 'round-trip' pages. i.e. {{ My
+template | here = x }} doesn't get arbitrarily re-written as:
+
+{{My template
+ |here=x
+}}
+
+or whatever convention we arbitrarily decide, which would create fake
+diffs between page edits that we don't want.
 
 = item * ident
 
