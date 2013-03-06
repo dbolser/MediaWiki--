@@ -101,15 +101,16 @@ sub parse {
         $self->sequence_of( sub {
             $self->
                 any_of(
-                    ## Note, the order of elements is important here!
-		    
+                    ## Note, the order of elements is important here! ?
+                    
+                    sub { $self->parse_wikitext },
+                    
                     ## Templates
                     sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
                     
                     ## Other element types...
-		    
-		    ## Currently anything else is just 'wikitext'
-                    sub { $self->parse_wikitext },
+                    
+#                    sub { $self->parse_wikitext },
                 );
         });
 
@@ -139,11 +140,12 @@ sub parse_template {
     $self->debug_parser('parse_template');
     
     # The title of the template
-    my $title = $self->parse_title;
+    my $title_string = $self->parse_title;
     
     ## The fields of the template, the optional
     ## '[key =] value' parts, '|' separated
     
+    ## Consume the first pipe (if any)
     $self->maybe( sub { $self->expect( '|' ) } );
     
     my $fields = $self->
@@ -151,8 +153,8 @@ sub parse_template {
     
     return $self->
         make_template(
-            title  => $title,
-            fields => $fields,
+            title_string => $title_string,
+            fields       => $fields,
         );
 }
 
@@ -160,33 +162,27 @@ sub parse_title {
     my $self = shift;
     $self->debug_parser('parse_title');
     
-    ## Give up on trying to be fancy with the title
     $self->parse_toke;
-    
-    ## Be 'MediaWiki-like' in title matching... This works well, but
-    ## we must preserve whitespace (to prevent false diffs, so I give
-    ## up on this method.
-    
-    # my $title = $self->
-    #     sequence_of( sub { $self->token_ident } );
-    # return join( ' ', @$title );
 }
 
 sub parse_field {
     my $self = shift;
     $self->debug_parser('parse_field');
     
-    my $key = $self->
-	maybe( sub {
-	    ( $self->parse_title,
-	      $self->expect( '=' ) )[0];
-	       });
+    ## Try to find a "key = ..."
+    my $key_string = $self->
+        maybe( sub { my $key = $self->parse_toke; 
+                     ## If we dont find this, we're not a key, were a value!
+                     $self->expect('=');
+                     return $key;
+               }
+        );
     
-    my $val = $self->parse_value;
+    my $value = $self->parse_value;
     
     return {
-	key   => $key || '',
-	value => $val
+        key_string => $key_string || '',
+        value      => $value,
     };
 }
 
@@ -195,17 +191,15 @@ sub parse_value {
     $self->debug_parser('parse_value');
     
     $self->
-        sequence_of( sub {
-            $self->any_of(
-                
-                ## A nested template?
-                sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
-                
-                ## Anything else
-                sub { $self->parse_toke },
-                
-                )
-        });
+        sequence_of( sub { $self->any_of(
+                               ## A nested template?
+                               sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
+                               
+                               ## Anything else
+                               sub { $self->parse_toke },
+                               
+                               )}
+        );
 }
 
 sub parse_toke {
@@ -213,7 +207,7 @@ sub parse_toke {
     $self->debug_parser('parse_toke');
     
     my $toke = $self->
-        substring_before( qr/}}|{{|\|/ );
+        substring_before( qr/}}|{{|\||=/ );
     
     ## This would keep returning '' until the end of time, so...
     length $toke or $self->fail;
@@ -233,7 +227,8 @@ sub debug_parser {
 
 
 
-## See Tangence::Compiler::Parser
+## See 'Tangence::Compiler::Parser' as an example of what we're doing
+## below
 
 =head2 $page = $parser->make_page( %args )
 
