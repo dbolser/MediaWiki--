@@ -73,8 +73,19 @@ sub new {
   my $class = shift;
   my %args  = @_;
   
+  ## TODO: Should carp if we don't have a title_string
+  
+  ## Wikify the title_string
+  $args{title} = wikify( $args{title_string} );
+  
+  ## Wikify the key_string for each field (if any)
+  for(@{$args{fields}}){
+      $_->{key} = wikify( $_->{key_string} );
+  }
+  
   bless \%args, $class;
 }
+
 
 
 =head1 ACCESSORS
@@ -91,6 +102,20 @@ sub title
 {
    my $self = shift;
    return $self->{title};
+}
+
+=cut
+
+=head2 $title = $template->title_string
+
+Returns the title string for the template
+
+=cut
+
+sub title_string
+{
+   my $self = shift;
+   return $self->{title_string};
 }
 
 =head2 $fields = $template->fields
@@ -123,6 +148,9 @@ sub field {
     my $key  = shift;
     my $val  = shift;
     
+    ## Lookup is standardized
+    $key = wikify( $key );
+    
     ## Note, fields are stored in an array to preserve their order. If
     ## I were brave, I'd build an index hash that would be updated by
     ## methods adding or removing fields (where?). Until then...
@@ -147,22 +175,18 @@ sub to_string {
     return ''
       if exists $self->{truncated};
     
-    my $title  = $self->title;
-    my $fields = $self->fields;
+    my $title_string  = $self->title_string;
+    my $fields        = $self->fields;
     
-#    @$fields > 1 ?
-#      $title .= "\n":
-#      $title .=  '|';
-
-    return '{{'. 
-      join( '|', $title, map { field_to_string( $_ ) } @$fields ).
-	"}}";
+    return
+        '{{'. join( '|', $title_string,
+                    map { field_to_string( $_ ) } @$fields ). '}}';
 }
 
 sub field_to_string {
     my $field = shift;
     
-    my $key = $field->{key} ? $field->{key}. '=' : '';
+    my $key_string = $field->{key_string} ? $field->{key_string}. '=' : '';
     
     my @values = @{$field->{value}};
     
@@ -173,7 +197,7 @@ sub field_to_string {
 	}
     }
     
-    return $key. join( '', @values );
+    return $key_string. join( '', @values );
 }
 
 sub truncate {
@@ -181,7 +205,15 @@ sub truncate {
     %$self = (truncated => 1);
 }
 
-
+sub wikify {
+    my $key_or_title = shift;
+    
+    ## 1) Strip leading and trailing whitespace
+    ## 2) Compress internal whitespace
+    
+    ## at some point ;-)
+    return $key_or_title;
+}
 
 
 
