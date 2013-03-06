@@ -1,0 +1,10 @@
+
+
+Requires
+* Parser::MGC
+
+For testing, I used instruction here to install it (under local-dep-lib):
+http://bioblog5000.blogspot.co.uk/2011/12/this-way-individual-projects-with.html
+
+
+The parser generates Page objects composed of Template objects.
