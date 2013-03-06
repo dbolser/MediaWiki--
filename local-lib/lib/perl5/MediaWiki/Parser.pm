@@ -101,16 +101,12 @@ sub parse {
         $self->sequence_of( sub {
             $self->
                 any_of(
-                    ## Note, the order of elements is important here! ?
-                    
                     sub { $self->parse_wikitext },
                     
                     ## Templates
                     sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
                     
                     ## Other element types...
-                    
-#                    sub { $self->parse_wikitext },
                 );
         });
 
