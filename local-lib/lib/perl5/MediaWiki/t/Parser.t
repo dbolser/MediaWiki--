@@ -3,6 +3,8 @@
 use strict;
 use Data::Dumper;
 
+use lib qw( local-lib/lib/perl5 );
+
 use Test::More qw( no_plan );
 #tests => 6;
 
