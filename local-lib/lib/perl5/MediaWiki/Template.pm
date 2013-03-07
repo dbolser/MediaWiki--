@@ -76,7 +76,7 @@ sub new {
   ## TODO: Should carp if we don't have a title_string
   
   ## Wikify the title_string
-  $args{title} = wikify( $args{title_string} );
+  $args{title} = wikify( $args{title_string}, 1 );
   
   ## Wikify the key_string for each field (if any)
   for(@{$args{fields}}){
@@ -94,7 +94,11 @@ sub new {
 
 =head2 $title = $template->title
 
-Returns the title of the template
+Returns the title of the Template.
+
+TODO: Make getters and setters? If so, remember that updates to the
+      title or string fields need to update the title_string or
+      key_string fields (and vice verse).
 
 =cut
 
@@ -131,10 +135,13 @@ sub fields
 }
 
 
-=head2 $value = $template->field( $key )
+=head2 $value = $template->field( $key [, $value] )
 
-Return the value of the field with the name given by $key, or undef if
-no field with that name is defined.
+Return (OR SET) the value of the field with the name given by $key, or
+undef if no field with that name is defined.
+
+TODO: Use the (currently unimplemented) key setter to set a new
+      key=value if the given key doesn't exist and a value is given.
 
 TODO: Handle anonymous fields (using a numeric index) in the same way
       MW does. I guess the first anonymous field is always {{{1}}},
@@ -168,6 +175,13 @@ sub field {
 
 
 
+=head2 $value = $template->to_string
+
+Functions to write the template out. This should be 'round trip' safe
+(by design), assuming nothing was changed.
+
+=cut
+
 sub to_string {
     my $self = shift;
     
@@ -200,19 +214,48 @@ sub field_to_string {
     return $key_string. join( '', @values );
 }
 
+=head2 $value = $template->truncate
+
+Pseudo-delete the template (nothing is deleted, but it will be printed
+as an empty string).
+
+=cut
+
 sub truncate {
     my $self = shift;
     %$self = (truncated => 1);
 }
 
+
+
+=head2 $value = wikify( $value string [, $is_title ] )
+
+Convert template keys and titles into their canonical 'wiki'
+form. This means that searches for a template called 'Some such' will
+match templates called like 'some such ', ' Some   such', and so on.
+
+TODO: Put this in a utility package?
+
+=cut
+
 sub wikify {
-    my $key_or_title = shift;
+    my $identifier = shift;
+    my $is_title   = shift || 0;
     
     ## 1) Strip leading and trailing whitespace
-    ## 2) Compress internal whitespace
+    $identifier =~ s/^\s*(.*\S)\s*$/$1/ms;
     
-    ## at some point ;-)
-    return $key_or_title;
+    ## 2) Compress internal whitespace
+    $identifier =~ s/\s+/ /gms;
+    
+    ## 3) If this is a template title, enforce MediaWiki's case
+    ##    insensitivity in the first character....
+    if($is_title){
+        $identifier =
+            uc(substr($identifier,0,1)). substr($identifier,1);
+    }
+    
+    return $identifier;
 }
 
 

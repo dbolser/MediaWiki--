@@ -17,6 +17,8 @@ $t .= "{{Hello|
 
 wibble 
 
+pibble
+
 =
 
 bibble}}";
