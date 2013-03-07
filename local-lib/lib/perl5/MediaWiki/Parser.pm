@@ -89,6 +89,8 @@ use constant
 
 See L<Parser::MGC>.
 
+TODO: Allow template keys with 'empty' values, e.g. {{x|y=}}
+
 =cut
 
 sub parse {
@@ -101,6 +103,8 @@ sub parse {
         $self->sequence_of( sub {
             $self->
                 any_of(
+                    
+                    ## Currenlty, anything that isn't a template
                     sub { $self->parse_wikitext },
                     
                     ## Templates
@@ -109,7 +113,7 @@ sub parse {
                     ## Other element types...
                 );
         });
-
+    
     ## Return a 'page' composed of these elements
     return $self->
         make_page(
