@@ -9,6 +9,14 @@ use MediaWiki::Parser;
 
 my $t = "Here begins our page!\n\n\n";
 
+$t .= qq(
+
+{{cite journal | author = White MB, Shen AL, Word CJ, Tucker PW, Blattner FR | title = Human immunoglobulin D: genomic sequence of the delta heavy chain | journal = Science | volume = 228 | issue = 4700 | pages = 733–7 | year = 1985 | month = May | pmid = 3922054 | pmc =  | doi =10.1126/science.3922054  }}</ref><ref name="entrez">{{cite web | title = Entrez Gene: IGHD immunoglobulin heavy constant delta| url = http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene&Cmd=ShowDetailView&TermToSearch=3495| accessdate = }}
+
+
+);
+
+
 $t .= " {{ T:b_la/r/p 0-89 m,y. (t)    her'e }}\n\n";
 
 $t .= "{{Hello|anon|yp}}";
