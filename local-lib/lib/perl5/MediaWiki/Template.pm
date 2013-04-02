@@ -163,12 +163,12 @@ sub field {
     ## methods adding or removing fields (where?). Until then...
     
     for my $field ( @{$self->{fields}} ){
-	if ($field->{key} eq $key){
-	    if(defined $val){
-		$field->{value} = $val;
-	    }
-	    return $field->{value}
-	}
+        if ($field->{key} eq $key){
+            if(defined $val){
+                $field->{value} = $val;
+            }
+            return $field->{value}
+        }
     }
     return undef;
 }
@@ -206,9 +206,9 @@ sub field_to_string {
     
     ## Recurse...
     for(my $i=0; $i<@values; $i++){
-	if(ref($values[$i]) eq 'MediaWiki::Template'){
-	    $values[$i] = $values[$i]->to_string;
-	}
+        if(ref($values[$i]) eq 'MediaWiki::Template'){
+            $values[$i] = $values[$i]->to_string;
+        }
     }
     
     return $key_string. join( '', @values );
