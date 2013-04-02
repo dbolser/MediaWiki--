@@ -78,7 +78,11 @@ sub new {
   ## Wikify the title_string
   $args{title} = wikify( $args{title_string}, 1 );
   
-  ## Wikify the key_string for each field (if any)
+  ## Wikify the key_string for each field (if any).
+
+  ## Note, we don't 'wikify' this in the same way as the title_string
+  ## above. Instead this step could be implemented by the 'fields'
+  ## function (below) when matching?
   for(@{$args{fields}}){
       $_->{key} = wikify( $_->{key_string} );
   }
@@ -161,6 +165,8 @@ sub field {
     ## Note, fields are stored in an array to preserve their order. If
     ## I were brave, I'd build an index hash that would be updated by
     ## methods adding or removing fields (where?). Until then...
+    
+    ## Also, fields could be objects?
     
     for my $field ( @{$self->{fields}} ){
         if ($field->{key} eq $key){
@@ -245,12 +251,14 @@ sub wikify {
     ## 1) Strip leading and trailing whitespace
     $identifier =~ s/^\s*(.*\S)\s*$/$1/ms;
     
-    ## 2) Compress internal whitespace
-    $identifier =~ s/\s+/ /gms;
-    
-    ## 3) If this is a template title, enforce MediaWiki's case
-    ##    insensitivity in the first character....
+    ## If this is a template title,
     if($is_title){
+        
+        ## 2) compress internal whitespace (including newlines)
+        $identifier =~ s/\s+/ /gms;
+        
+        ## 3) and enforce MediaWiki's case insensitivity in the first
+        ##    character...
         $identifier =
             uc(substr($identifier,0,1)). substr($identifier,1);
     }
