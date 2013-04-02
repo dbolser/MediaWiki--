@@ -43,6 +43,55 @@ Some {{ s }} wiki {{ k | l | m = n | {{ o | p }} | q = {{ r | s }} | {{ t | u = 
 EOP
 
 push @t, <<"EOP";
+Some {{ S }} wiki {{ K | l | m = n | {{ O | p }} | q = {{ R | s }} | {{ T | u = v }} | w = {{ X | y = z }} }} text.
+EOP
+
+push @t, <<"EOP";
+Some {{
+s
+}} wiki {{
+k
+|
+l
+|
+m
+=
+n
+|
+{{o
+|
+p
+}}
+|
+q
+=
+{{
+r
+|
+s
+}}
+|
+{{
+t
+|
+u
+=
+v
+}}
+|
+w
+=
+{{
+x
+|
+y
+=
+z
+}}
+}} text.
+EOP
+
+push @t, <<"EOP";
 Some {{
  s 
 }} wiki {{   k 
@@ -68,59 +117,87 @@ n
 }} text.
 EOP
 
+
+
 my $last_r;
 
 for my $t (@t){
-    
+
     ok( my $r = $p->from_string( $t ), 'parsed ok' );
-    
+
     print Dumper $r
       if $debugging > 0;
-    
+
     #if(defined($last_r)){
     #   is_deeply( $r, $last_r );
     #}
-    
+
     isa_ok( $r, 'MediaWiki::Page' );
-    
+
     ## hack, since we now moved to objects
     $r = $r->elements;
-    
+
     ## The result should have 5 parts, alternating text and 'template'
     ok( @$r == 5, 'got 5 parts' );
+
+    ok( ! ref $r->[0] );
     ok( $r->[0] eq "Some " );
+
+    ok( ! ref $r->[2] );
     ok( $r->[2] eq " wiki " );
+
+    ok( ! ref $r->[4] );
     ok( $r->[4] eq " text.\n" );
-    
+
+
     isa_ok( $r->[1], 'HASH' );
+    isa_ok( $r->[1], 'MediaWiki::Template' );
+
     isa_ok( $r->[3], 'HASH' );
-    
-    ok(     $r->[1]->{title} eq 'S' );
-    isa_ok( $r->[1]->{fields}, 'ARRAY' );
-    ok(   @{$r->[1]->{fields}} == 0 );
+    isa_ok( $r->[3], 'MediaWiki::Template' );
 
-    ok(     $r->[3]->{title} eq 'K' );
-    isa_ok( $r->[3]->{fields}, 'ARRAY' );
-    ok(   @{$r->[3]->{fields}} == 6 );
-    
-    ok( exists $r->[3]->{fields}->[0]->{key} );
-    ok(        $r->[3]->{fields}->[0]->{key} eq '', 'key is blank');
-    ok( exists $r->[3]->{fields}->[0]->{value} );
-    isa_ok(    $r->[3]->{fields}->[0]->{value}, 'ARRAY' );
-    ok(      @{$r->[3]->{fields}->[0]->{value}} == 1 );
-    ok(        $r->[3]->{fields}->[0]->{value}->[0] =~ /^\s*l\s*$/ );
-    
-    ok( exists $r->[3]->{fields}->[1]->{key} );
-    ok(        $r->[3]->{fields}->[1]->{key} eq 'm' );
-    ok( exists $r->[3]->{fields}->[1]->{value} );
-    isa_ok(    $r->[3]->{fields}->[1]->{value}, 'ARRAY' );
-    ok(      @{$r->[3]->{fields}->[1]->{value}} == 1 );
-    ok(        $r->[3]->{fields}->[1]->{value}->[0] =~ /^\s*n\s*$/ );
 
-    ok( exists $r->[3]->{fields}->[2]->{key} );
-    ok(        $r->[3]->{fields}->[2]->{key} eq '' );
-    ok( exists $r->[3]->{fields}->[2]->{value} );
-    isa_ok(    $r->[3]->{fields}->[2]->{value}, 'ARRAY' );
+    ok(     $r->[1]->title eq 'S' );
+    isa_ok( $r->[1]->fields, 'ARRAY' );
+    ok(   @{$r->[1]->fields} == 0 );
+
+    ok(     $r->[3]->title eq 'K' );
+    isa_ok( $r->[3]->fields, 'ARRAY' );
+    ok(   @{$r->[3]->fields} == 6 );
+
+    ## Currently, each field is a simple, key (key_string) = value HASH
+    foreach my $field ( @{$r->[3]->fields} ){
+        isa_ok( $field, 'HASH' );
+        ok( exists $field->{key} );
+        ok( exists $field->{key_string} );
+        ok( exists $field->{value} );
+    }
+    
+
+    ## Test each field explicitly...
+    my $l = ${$r->[3]->fields}[0]; ## Key only
+    my $m = ${$r->[3]->fields}[1]; ## Key = value
+    my $o = ${$r->[3]->fields}[2]; ## Key = template
+    
+    ok(     $l->{key} eq '', 'key is blank');
+    isa_ok( $l->{value}, 'ARRAY' );
+    ok(   @{$l->{value}} == 1 );
+    ok(     $l->{value}->[0] =~ /^\s*l\s*$/ );
+    
+    ok(     $m->{key} eq 'm' );
+    isa_ok( $m->{value}, 'ARRAY' );
+    ok(   @{$m->{value}} == 1 );
+    ok(     $m->{value}->[0] =~ /^\s*n\s*$/ );
+    
+    ok(     $o->{key} eq '', 'key is blank' );
+    isa_ok( $o->{value}, 'ARRAY' );
+
+    ## The template has three values, the string before, the template
+    ## object, and the string after.
+    ok(   @{$o->{value}} == 3 );
+}
+
+__END__
 
     # # It's another template!
     # ok(      @{$r->[3]->{fields}->[2]->{value}} == 1 );
