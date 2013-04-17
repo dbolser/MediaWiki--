@@ -1,6 +1,7 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use strict;
+use warnings;
 
 use Data::Dumper;
 
@@ -9,84 +10,89 @@ use MediaWiki::Parser;
 
 my $t = "Here begins our page!\n\n\n";
 
+$t .= "{{ x | y =   }}\n";
+$t .= "{{ x | y     }}\n";
+
+# {{cite journal | author = White MB, Shen AL, Word CJ, Tucker PW, Blattner FR | title = Human immunoglobulin D: genomic sequence of the delta heavy chain | journal = Science | volume = 228 | issue = 4700 | pages = 733–7 | year = 1985 | month = May | pmid = 3922054 | pmc =  | doi =10.1126/science.3922054  }}
+
+# );
+
 $t .= qq(
 
-{{cite journal | author = White MB, Shen AL, Word CJ, Tucker PW, Blattner FR | title = Human immunoglobulin D: genomic sequence of the delta heavy chain | journal = Science | volume = 228 | issue = 4700 | pages = 733–7 | year = 1985 | month = May | pmid = 3922054 | pmc =  | doi =10.1126/science.3922054  }}</ref><ref name="entrez">{{cite web | title = Entrez Gene: IGHD immunoglobulin heavy constant delta| url = http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene&Cmd=ShowDetailView&TermToSearch=3495| accessdate = }}
-
-
+<ref name="entrez">{{cite web | title = Entrez Gene: IGHD immunoglobulin heavy constant delta| url = http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene| accessdate = }}
 );
 
 
-$t .= " {{ T:b_la/r/p 0-89 m,y. (t)    her'e }}\n\n";
+# $t .= " {{ T:b_la/r/p 0-89 m,y. (t)    her'e }}\n\n";
 
-$t .= "{{Hello|anon|yp}}";
+# $t .= "{{Hello|anon|yp}}";
 
-$t .= "{{Hello|
+# $t .= "{{Hello|
 
-wibble 
+# wibble 
 
-pibble
+# pibble
 
-=
+# =
 
-bibble}}";
+# bibble}}";
 
-$t .= "{{Hello|anon|yp}}\n\n";
+# $t .= "{{Hello|anon|yp}}\n\n";
 
-$t .= "{{Hello wor|my key now = * ting [http://ubers]
-|yp=xy|||
-krimple
+# $t .= "{{Hello wor|my key now = * ting [http://ubers]
+# |yp=xy|||
+# krimple
 
-poing
+# poing
 
-= 
+# = 
 
-wimple
+# wimple
 
-|
+# |
 
-x
+# x
 
-}}
-";
+# }}
+# ";
 
-$t .= "{{t |   |   |   |   |   |g  }}";
-$t .= "{{t |b  |c  |d  |e  |f  |g  }}";
-$t .= "{{t |b=1|c=2|d=3|e=4|f=5|g=6}}";
-$t .= "{{ t | b = 1 | c = 2 | d = 3 | e = 4 | f = 5 | g = 6 }}";
+# $t .= "{{t |   |   |   |   |   |g  }}";
+# $t .= "{{t |b  |c  |d  |e  |f  |g  }}";
+# $t .= "{{t |b=1|c=2|d=3|e=4|f=5|g=6}}";
+# $t .= "{{ t | b = 1 | c = 2 | d = 3 | e = 4 | f = 5 | g = 6 }}";
 
-## Nice demo
-$t .=
-    "{{t|p|q=r|{{s|t}}|u={{v|w}}|{{x|y=z}}|a={{b|c=d}}}}\n\n";
+# ## Nice demo
+# $t .=
+#     "{{t|p|q=r|{{s|t}}|u={{v|w}}|{{x|y=z}}|a={{b|c=d}}}}\n\n";
 
-## Nice demo
-$t .=
-    ' {{ t | p | q = r | {{ s | t }} | u = {{ v | w }} | {{ x | y = z }} | a = {{ b | c = d }} }} ';
+# ## Nice demo
+# $t .=
+#     ' {{ t | p | q = r | {{ s | t }} | u = {{ v | w }} | {{ x | y = z }} | a = {{ b | c = d }} }} ';
 
-## Nice demo
-$t .=
-    '{{s}} {{ s }} {{s }} {{ s}}
-{{t
- | p
- | q = r
- | {{ s
-    | t
-   }}
- | u = {{ v
-        | w }}
- | {{ x
-    | y = z
-   }}
- | a = {{ b
-        | c = d
-       }}
-}}
+# ## Nice demo
+# $t .=
+#     '{{s}} {{ s }} {{s }} {{ s}}
+# {{t
+#  | p
+#  | q = r
+#  | {{ s
+#     | t
+#    }}
+#  | u = {{ v
+#         | w }}
+#  | {{ x
+#     | y = z
+#    }}
+#  | a = {{ b
+#         | c = d
+#        }}
+# }}
 
-';
+# ';
 
-## Value mixes stings and templates
-$t .=
-    "{{ t | p = One {{sny}} day {{P|Rose}} and {{P|x=Jim}} }}\n\n\n";
+# ## Value mixes stings and templates
+# $t .=
+#     "{{ t | p = One {{sny}} day {{P|Rose}} and {{P|x=Jim}} }}\n\n\n";
 
 ## 
 print $t;
@@ -114,7 +120,7 @@ print "There are ", scalar( @{$page->templates} ), " templates in it.\n\n";
 # }
 
 my $x = $page->to_string;
-#print $t;
+print $t;
 #print $x;
 
 print "Neeeeee!\n" if $t ne $x;
