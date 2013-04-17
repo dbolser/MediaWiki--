@@ -207,6 +207,7 @@ sub parse_toke {
     $self->debug_parser('parse_toke');
     
     my $toke = $self->
+        ## BUG: The = here breaks when they occur in values! 
         substring_before( qr/}}|{{|\||=/ );
     
     ## This would keep returning '' until the end of time, so...
