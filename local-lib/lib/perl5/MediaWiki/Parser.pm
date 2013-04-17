@@ -205,10 +205,25 @@ sub parse_value {
 sub parse_toke {
     my $self = shift;
     $self->debug_parser('parse_toke');
+
+    my $toke = $self->
+        ## BUG: The = here breaks when they occur in values! Try via
+        #substring_before( qr/}}|{{|\||=/ );
+        substring_before( qr/}}|{{|\|/ );
+
+    ## This would keep returning '' until the end of time, so...
+    length $toke or $self->fail;
     
+    return $toke;
+}
+
+sub parse_value_toke {
+    my $self = shift;
+    $self->debug_parser('parse_toke');
+
     my $toke = $self->
         substring_before( qr/}}|{{|\||=/ );
-    
+
     ## This would keep returning '' until the end of time, so...
     length $toke or $self->fail;
     
