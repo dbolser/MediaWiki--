@@ -138,19 +138,19 @@ sub parse_wikitext {
 sub parse_template {
     my $self = shift;
     $self->debug_parser('parse_template');
-    
+
     # The title of the template
     my $title_string = $self->parse_title;
-    
+
     ## The fields of the template, the optional
     ## '[key =] value' parts, '|' separated
-    
+
     ## Consume the first pipe (if any)
     $self->maybe( sub { $self->expect( '|' ) } );
-    
+
     my $fields = $self->
         list_of( '|', sub{ $self->parse_field } );
-    
+
     return $self->
         make_template(
             title_string => $title_string,
@@ -161,25 +161,27 @@ sub parse_template {
 sub parse_title {
     my $self = shift;
     $self->debug_parser('parse_title');
-    
+
+    ## Actually, the title should not include newlines, which the toke
+    ## does. However, this isn't really a big deal.
     $self->parse_toke;
 }
 
 sub parse_field {
     my $self = shift;
     $self->debug_parser('parse_field');
-    
+
     ## Try to find a "key = ..."
     my $key_string = $self->
-        maybe( sub { my $key = $self->parse_toke; 
+        maybe( sub { my $key = $self->parse_key;
                      ## If we dont find this, we're not a key, were a value!
                      $self->expect('=');
                      return $key;
                }
         );
-    
+
     my $value = $self->parse_value;
-    
+
     return {
         key_string => $key_string || '',
         value      => $value,
@@ -189,17 +191,19 @@ sub parse_field {
 sub parse_value {
     my $self = shift;
     $self->debug_parser('parse_value');
-    
-    $self->
-        sequence_of( sub { $self->any_of(
-                               ## A nested template?
-                               sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
-                               
-                               ## Anything else
-                               sub { $self->parse_toke },
-                               
-                               )}
-        );
+
+    $self->sequence_of( sub {
+        $self->
+            any_of(
+
+                ## A nested template?
+                sub { $self->scope_of( '{{', \&parse_template, '}}' ) },
+
+                ## Anything else
+                sub { $self->parse_toke },
+
+            )
+    });
 }
 
 sub parse_toke {
@@ -207,19 +211,17 @@ sub parse_toke {
     $self->debug_parser('parse_toke');
 
     my $toke = $self->
-        ## BUG: The = here breaks when they occur in values! Try via
-        #substring_before( qr/}}|{{|\||=/ );
         substring_before( qr/}}|{{|\|/ );
 
     ## This would keep returning '' until the end of time, so...
     length $toke or $self->fail;
-    
+
     return $toke;
 }
 
-sub parse_value_toke {
+sub parse_key {
     my $self = shift;
-    $self->debug_parser('parse_toke');
+    $self->debug_parser('parse_key');
 
     my $toke = $self->
         substring_before( qr/}}|{{|\||=/ );

@@ -35,15 +35,15 @@ isa_ok( $p, 'MediaWiki::Parser' );
 my @t;
 
 push @t, <<"EOP";
-Some {{s}} wiki {{k|l|m=n|{{o|p}}|q={{r|s}}|{{t|u=v}}|w={{x|y=z}}}} text.
+Some {{s}} wiki {{k|l|m=n|{{o|p}}|q={{r|s}}|{{t|u=v}}|w={{x|y=z=a}}}} text.
 EOP
 
 push @t, <<"EOP";
-Some {{ s }} wiki {{ k | l | m = n | {{ o | p }} | q = {{ r | s }} | {{ t | u = v }} | w = {{ x | y = z }} }} text.
+Some {{ s }} wiki {{ k | l | m = n | {{ o | p }} | q = {{ r | s }} | {{ t | u = v }} | w = {{ x | y = z = a }} }} text.
 EOP
 
 push @t, <<"EOP";
-Some {{ S }} wiki {{ K | l | m = n | {{ O | p }} | q = {{ R | s }} | {{ T | u = v }} | w = {{ X | y = z }} }} text.
+Some {{ S }} wiki {{ K | l | m = n | {{ O | p }} | q = {{ R | s }} | {{ T | u = v }} | w = {{ X | y = z = a }} }} text.
 EOP
 
 push @t, <<"EOP";
@@ -87,6 +87,8 @@ x
 y
 =
 z
+=
+a
 }}
 }} text.
 EOP
@@ -113,7 +115,8 @@ n
 }}
 | q                 = {{ r | s }} | {{
  t | u =   v }}
-| w = {{ x|  y =z
+| w = {{ x|  y =
+                 z=a
 
 }}
 }} text.
@@ -186,6 +189,8 @@ for my $t (@t){
     my $l = ${$r->[3]->fields}[0]; ## Key only
     my $m = ${$r->[3]->fields}[1]; ## Key = value
     my $o = ${$r->[3]->fields}[2]; ## Key = template
+
+    #print Dumper $r; exit;
 
     ok(     $l->{key} eq '', 'key is blank');
     isa_ok( $l->{value}, 'ARRAY' );
@@ -296,7 +301,7 @@ ok( -e $f );
 
 ## Parse the file
 
-ok( my $r = $p->from_file( $f ) );
+ok( $r = $p->from_file( $f ) );
 
 isa_ok( $r, 'MediaWiki::Page' );
 
