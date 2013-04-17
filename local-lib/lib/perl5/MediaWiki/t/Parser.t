@@ -94,6 +94,8 @@ EOP
 push @t, <<"EOP";
 Some {{
  s 
+
+
 }} wiki {{   k 
 
 |l    
@@ -123,23 +125,28 @@ my $last_r;
 
 for my $t (@t){
 
+    ## Parse the page (string)
     ok( my $r = $p->from_string( $t ), 'parsed ok' );
-
-    print Dumper $r
-      if $debugging > 0;
-
-    #if(defined($last_r)){
-    #   is_deeply( $r, $last_r );
-    #}
 
     isa_ok( $r, 'MediaWiki::Page' );
 
-    ## hack, since we now moved to objects
+    ## Test that we can round trip the page
+    ok( $r->to_string eq $t, 'printed ok' );
+
+    ## Check that each version has the same underlying structure as
+    ## the last
+    # if(defined($last_t)){
+    #    ...
+    # }
+
+    ## hack, since we now moved to objects... all the rest of the loop
+    ## is a hack...
     $r = $r->elements;
 
     ## The result should have 5 parts, alternating text and 'template'
     ok( @$r == 5, 'got 5 parts' );
 
+    ## Test the (invariant) text parts
     ok( ! ref $r->[0] );
     ok( $r->[0] eq "Some " );
 
@@ -150,6 +157,7 @@ for my $t (@t){
     ok( $r->[4] eq " text.\n" );
 
 
+    ## Test the template parts
     isa_ok( $r->[1], 'HASH' );
     isa_ok( $r->[1], 'MediaWiki::Template' );
 
@@ -157,6 +165,7 @@ for my $t (@t){
     isa_ok( $r->[3], 'MediaWiki::Template' );
 
 
+    ## Deeper
     ok(     $r->[1]->title eq 'S' );
     isa_ok( $r->[1]->fields, 'ARRAY' );
     ok(   @{$r->[1]->fields} == 0 );
@@ -165,82 +174,49 @@ for my $t (@t){
     isa_ok( $r->[3]->fields, 'ARRAY' );
     ok(   @{$r->[3]->fields} == 6 );
 
-    ## Currently, each field is a simple, key (key_string) = value HASH
+    ## Each field is a simple 'key (key_string) = value' HASH
     foreach my $field ( @{$r->[3]->fields} ){
         isa_ok( $field, 'HASH' );
         ok( exists $field->{key} );
         ok( exists $field->{key_string} );
         ok( exists $field->{value} );
     }
-    
 
-    ## Test each field explicitly...
+    ## Test each (of the first three) field(s) explicitly...
     my $l = ${$r->[3]->fields}[0]; ## Key only
     my $m = ${$r->[3]->fields}[1]; ## Key = value
     my $o = ${$r->[3]->fields}[2]; ## Key = template
-    
+
     ok(     $l->{key} eq '', 'key is blank');
     isa_ok( $l->{value}, 'ARRAY' );
     ok(   @{$l->{value}} == 1 );
     ok(     $l->{value}->[0] =~ /^\s*l\s*$/ );
-    
+
     ok(     $m->{key} eq 'm' );
     isa_ok( $m->{value}, 'ARRAY' );
     ok(   @{$m->{value}} == 1 );
     ok(     $m->{value}->[0] =~ /^\s*n\s*$/ );
-    
+
+    ## The third field is a nested template...
     ok(     $o->{key} eq '', 'key is blank' );
     isa_ok( $o->{value}, 'ARRAY' );
 
-    ## The template has three values, the string before, the template
-    ## object, and the string after.
-    ok(   @{$o->{value}} == 3 );
-}
+    ## The template has up to three parts, the string before, the
+    ## template object, and the string after... but either the before
+    ## or after string can be null....
 
-__END__
+    ## Grab the template part
+    my $p = (grep( ref($_) eq 'MediaWiki::Template', @{$o->{value}} ))[0];
 
-    # # It's another template!
-    # ok(      @{$r->[3]->{fields}->[2]->{value}} == 1 );
-    # print Dumper @{$r->[3]->{fields}->[2]->{value}};
-    
-    # my $x =    $r->[3]->{fields}->[2]->{value}->[0];
-    # isa_ok( $x, 'HASH' );
-    
-    # ok(     $x->{title} eq 'O' );
-    # isa_ok( $x->{fields}, 'ARRAY' );
-    # ok(   @{$x->{fields}} == 1 );
-    
-    # ok( exists $x->{fields}->[0]->{key} );
-    # ok(        $x->{fields}->[0]->{key} eq '' );
-    # ok( exists $x->{fields}->[0]->{value} );
-    # isa_ok(    $x->{fields}->[0]->{value}, 'ARRAY' );
-    # ok(      @{$x->{fields}->[0]->{value}} == 1 );
-    # ok(        $x->{fields}->[0]->{value}->[0] =~ /^\s*p\s*$/ );
-    
-    ## Enough already!
-    ok( exists $r->[3]->{fields}->[5]->{key} );
-    ok(        $r->[3]->{fields}->[5]->{key} eq 'w' );
-    ok( exists $r->[3]->{fields}->[5]->{value} );
-    isa_ok(    $r->[3]->{fields}->[5]->{value}, 'ARRAY' );
-    # ok(      @{$r->[3]->{fields}->[5]->{value}} == 1 );
+    isa_ok( $p, 'HASH' );
+    isa_ok( $p, 'MediaWiki::Template' );
 
-    # # It's another template!
-    # my $y =    $r->[3]->{fields}->[5]->{value}->[0];
-    
-    # isa_ok( $y, 'HASH' );
-    
-    # ok(     $y->{title} eq 'X' );
-    # isa_ok( $y->{fields}, 'ARRAY' );
-    # ok(   @{$y->{fields}} == 1 );
-    
-    # ok( exists $y->{fields}->[0]->{key} );
-    # ok( exists $y->{fields}->[0]->{value} );
-    # ok(        $y->{fields}->[0]->{key} eq 'y' );
-    # isa_ok(    $y->{fields}->[0]->{value}, 'ARRAY' );
-    # ok(      @{$y->{fields}->[0]->{value}} == 1 );
-    # ok(        $y->{fields}->[0]->{value}->[0] =~ /^\s*z\s*$/ );
+    ## We stop here before we get too recursive...
 
-    $last_r = $r;
+    # ## BUT WHY DOES THIS FAIL? (key/value are undef)
+    # print Dumper $p;
+    # print Dumper $p->{key};
+    # print Dumper $p->{value};
 }
 
 
@@ -248,7 +224,11 @@ __END__
 ## Try some more complex examples (using the object interfacd now,
 ## insead of the 'elements' hack above).
 
-## THIS IS AN INVALID TEMPLATE! (titles may not span multiple lines)
+## This is an invalid template! (Titles may not span multiple
+## lines)... 'Unfortunately' we handle it fine (should be considered
+## as a string, but treating it as a valid template isn't so bad I
+## guess?)
+
 my $t = "{{ here is  a 
  template | and here is a  value | this key = x | but
 this key = y ||||| and they ain't the same
@@ -259,14 +239,14 @@ this key = y ||||| and they ain't the same
 
 ok( my $r = $p->from_string( $t ), 'parsed ok' );
 
-print Dumper $r
-  if $debugging > 0;
-
 isa_ok( $r, 'MediaWiki::Page' );
+
+ok( $r->to_string eq $t, 'printed ok' );
 
 ## The result should have 1 part, a 'MW:Template'
 ok( @{$r->elements} == 1, 'got 1 part' );
 
+## TODO: Use object interface here!
 my $e1 = ${$r->elements}[0];
 
 isa_ok( $e1, 'MediaWiki::Template' );
@@ -275,9 +255,7 @@ ok( $e1->title eq 'Here is a template' );
 
 
 
-
-
-## Seems to fail!
+## Another test...
 $t = "{{Cell line
 |id=1146
 |name=EHEB
@@ -291,21 +269,19 @@ $t = "{{Cell line
 
 ok( $r = $p->from_string( $t ), 'parsed ok' );
 
-print Dumper $r
-  if $debugging > 0;
-
 isa_ok( $r, 'MediaWiki::Page' );
+
+ok( $r->to_string eq $t, 'printed ok' );
 
 ## The result should have 1 part, a 'MW:Template'
 ok( @{$r->elements} == 1, 'got 1 part' );
 
+## TODO: Use object interface here!
 $e1 = ${$r->elements}[0];
 
 isa_ok( $e1, 'MediaWiki::Template' );
 
 ok( $e1->title eq 'Cell line' );
-
-
 
 
 
