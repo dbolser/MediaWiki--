@@ -190,38 +190,38 @@ for my $t (@t){
     my $m = ${$r->[3]->fields}[1]; ## Key = value
     my $o = ${$r->[3]->fields}[2]; ## Key = template
 
-    #print Dumper $r; exit;
+       #print Dumper $r; exit;
 
-    ok(     $l->{key} eq '', 'key is blank');
-    isa_ok( $l->{value}, 'ARRAY' );
-    ok(   @{$l->{value}} == 1 );
-    ok(     $l->{value}->[0] =~ /^\s*l\s*$/ );
+       ok(     $l->{key} eq '', 'key is blank');
+       isa_ok( $l->{value}, 'ARRAY' );
+       ok(   @{$l->{value}} == 1 );
+       ok(     $l->{value}->[0] =~ /^\s*l\s*$/ );
 
-    ok(     $m->{key} eq 'm' );
-    isa_ok( $m->{value}, 'ARRAY' );
-    ok(   @{$m->{value}} == 1 );
-    ok(     $m->{value}->[0] =~ /^\s*n\s*$/ );
+       ok(     $m->{key} eq 'm' );
+       isa_ok( $m->{value}, 'ARRAY' );
+       ok(   @{$m->{value}} == 1 );
+       ok(     $m->{value}->[0] =~ /^\s*n\s*$/ );
 
-    ## The third field is a nested template...
-    ok(     $o->{key} eq '', 'key is blank' );
-    isa_ok( $o->{value}, 'ARRAY' );
+       ## The third field is a nested template...
+       ok(     $o->{key} eq '', 'key is blank' );
+       isa_ok( $o->{value}, 'ARRAY' );
 
-    ## The template has up to three parts, the string before, the
-    ## template object, and the string after... but either the before
-    ## or after string can be null....
+       ## The template has up to three parts, the string before, the
+       ## template object, and the string after... but either the before
+       ## or after string can be null....
 
-    ## Grab the template part
-    my $p = (grep( ref($_) eq 'MediaWiki::Template', @{$o->{value}} ))[0];
+       ## Grab the template part
+       my $p = (grep( ref($_) eq 'MediaWiki::Template', @{$o->{value}} ))[0];
 
-    isa_ok( $p, 'HASH' );
-    isa_ok( $p, 'MediaWiki::Template' );
+       isa_ok( $p, 'HASH' );
+       isa_ok( $p, 'MediaWiki::Template' );
 
-    ## We stop here before we get too recursive...
+       ## We stop here before we get too recursive...
 
-    # ## BUT WHY DOES THIS FAIL? (key/value are undef)
-    # print Dumper $p;
-    # print Dumper $p->{key};
-    # print Dumper $p->{value};
+       # ## BUT WHY DOES THIS FAIL? (key/value are undef)
+       # print Dumper $p;
+       # print Dumper $p->{key};
+       # print Dumper $p->{value};
 }
 
 
@@ -305,23 +305,34 @@ ok( $r = $p->from_file( $f ) );
 
 isa_ok( $r, 'MediaWiki::Page' );
 
-__END__
+## Hackety hack
+$r = $r->elements;
 
-# print "got ", scalar @$r, " pieces\n";
+## The result should have 25 parts, alternating text and 'template'
+ok( @$r == 25, 'got 25 parts' );
 
-# for(@$r){
-#     if(ref($_)){
-# 	if(ref($_) eq 'HASH'){
-# 	    ## Every template has a title;
-# 	    ok( length $_->{'title'} > 0 );
-# 	    print "\t", $_->{'title'}, "\n";
-# 	}
-# 	else{ ok( 0 ) }
-#     }
-#     else{
-# 	print "\tlen:", length $_, "\n";
-#     }
-# }
+for(@$r){
+    my $templates = 0;
+    if(ref($_)){
+        $templates++;
+
+        ## Test the template parts
+        isa_ok( $r->[1], 'HASH' );
+        isa_ok( $r->[1], 'MediaWiki::Template' );
+
+        ## Every template has a title;
+        ok( length $_->title > 0 );
+        print "\t", $_->title, "\n";
+
+        ## Each field is a simple 'key (key_string) = value' HASH
+        foreach my $field ( @{$_->fields} ){
+            isa_ok( $field, 'HASH' );
+            ok( exists $field->{key} );
+            ok( exists $field->{key_string} );
+            ok( exists $field->{value} );
+        }
+    }
+}
 
 
-# #print Dumper $r->[-5];
+
